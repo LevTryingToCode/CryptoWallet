@@ -18,20 +18,19 @@ namespace CryptoWallet.Controllers
         [HttpPost("buy")]
         public async Task<IActionResult> Buy([FromBody] BuyDTO dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _tradeService.BuyCryptoAsync(dto.UserId, dto.CurrencyId, dto.AmountToBuy);
-            if (!result) return BadRequest("Buy failed. Check balance or currency.");
-            return Ok("Buy successful.");
+            var success = await _tradeService.BuyCryptoAsync(dto.UserId, dto.CurrencyId, dto.AmountToBuy);
+            if (!success)
+                return BadRequest("Buy failed! Not enough currency or error during cryptoCurrency load.");
+            return Ok("Vásárlás sikeres.");
         }
 
         [HttpPost("sell")]
         public async Task<IActionResult> Sell([FromBody] SellDTO dto)
         {
-            var result = await _tradeService.SellCryptoAsync(dto.UserId, dto.CurrencyId, dto.AmountToSell);
-            if (!result) return BadRequest("Sell failed. Not enough assets.");
-            return Ok("Sell successful.");
+            var success = await _tradeService.SellCryptoAsync(dto.UserId, dto.CurrencyId, dto.AmountToSell);
+            if (!success)
+                return BadRequest("Sell Failed!");
+            return Ok("Sell successful!");
         }
 
         [HttpGet("/api/portfolio/{userId}")]
