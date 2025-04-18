@@ -1,9 +1,15 @@
 using CryptoWallet.Entities;
+using CryptoWallet.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<IUserService,UserService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
+builder.Services.AddScoped<ITradeService,TradeService>();
+builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Sqlexpress")));
 
