@@ -4,6 +4,6 @@
     {
         public int CurrencyItemId { get; set; }
         public Currency currency { get; set; } = null!;
-        public int Quantity { get; set; }
+        public double BuyValue { get; set; }    
     }
 }
