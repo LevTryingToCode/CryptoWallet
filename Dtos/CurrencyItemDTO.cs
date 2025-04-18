@@ -13,10 +13,5 @@
             public int CurrencyId { get; set; }
             public double BuyValue { get; set; }
         }
-        public class CurrencyItemSellDTO
-        { 
-            public int CurrencyId { get; set; }
-            public double SellValue { get; set; }
-        }
     }
 }
