@@ -6,7 +6,7 @@ namespace CryptoWallet.Services
     public class CurrencyUpdateBackgroundService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly TimeSpan _interval = TimeSpan.FromMinutes(1); 
+        private readonly TimeSpan _interval = TimeSpan.FromSeconds(10); 
         private readonly Random _random = new Random();
         public CurrencyUpdateBackgroundService(IServiceProvider serviceProvider)
         {

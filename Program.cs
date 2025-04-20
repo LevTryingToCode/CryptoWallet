@@ -5,17 +5,24 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Controllers and Services
 builder.Services.AddControllers();
 builder.Services.AddScoped<IUserService,UserService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<ITradeService,TradeService>();
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 
+//Background Services
 builder.Services.AddHostedService<CurrencyUpdateBackgroundService>();
+builder.Services.AddSingleton<CurrencyLoggerBackgroundService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<CurrencyLoggerBackgroundService>());
 
+//Database
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Sqlexpress")));
 
 builder.Services.AddEndpointsApiExplorer();
+
+//Swagger
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo() { Title = "CryptoWallet API", Version = "v1" });

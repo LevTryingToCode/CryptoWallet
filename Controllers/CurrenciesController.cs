@@ -29,6 +29,7 @@ namespace CryptoWallet.Controllers
         public async Task<ActionResult<List<CurrencyListDTO>>> GetAllCurrencies()
         { 
             var currencies = await _currencyService.GetAllCurrenciesAsync();
+            if (currencies == null) { return BadRequest("The currency list cannot be reached."); }
             return Ok(currencies);
         }
 
