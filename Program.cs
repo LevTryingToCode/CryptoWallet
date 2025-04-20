@@ -11,6 +11,8 @@ builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<ITradeService,TradeService>();
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 
+builder.Services.AddHostedService<CurrencyUpdateBackgroundService>();
+
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Sqlexpress")));
 
 builder.Services.AddEndpointsApiExplorer();

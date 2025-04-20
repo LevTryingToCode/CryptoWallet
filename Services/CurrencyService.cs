@@ -10,6 +10,7 @@ namespace CryptoWallet.Services
         Task<CurrencyListDTO?> GetCurrencyByIdAsync(int id);
         Task<bool> CreateCurrencyAsync(CurrencyCreateDTO dto);
         Task<bool> DeleteCurrencyAsync(int id);
+        Task<bool> UpdateCurrencyManuallyAsync(int id,double newprice);
     }
     public class CurrencyService : ICurrencyService
     {
@@ -62,6 +63,16 @@ namespace CryptoWallet.Services
                 CurrencyName = currency.Name,
                 CurrencyValue = currency.Value
             };
+        }
+
+        public async Task<bool> UpdateCurrencyManuallyAsync(int id, double newprice)
+        {
+            var currency = await _context.currencies.FindAsync(id);
+            if (currency == null) return false;
+            
+            currency.Value = newprice; 
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

@@ -12,7 +12,7 @@ using static CryptoWallet.Dtos.CurrencyDTO;
 
 namespace CryptoWallet.Controllers
 {
-    [Route("api/cryptos")]
+    [Route("api/crypto")]
     [ApiController]
     public class CurrenciesController : ControllerBase
     {
@@ -24,7 +24,7 @@ namespace CryptoWallet.Controllers
         }
 
 
-        //GET: /api/cryptos
+        //GET: /api/crypto
         [HttpGet]
         public async Task<ActionResult<List<CurrencyListDTO>>> GetAllCurrencies()
         { 
@@ -33,7 +33,7 @@ namespace CryptoWallet.Controllers
         }
 
 
-        // GET: /api/cryptos/{cryptoId}
+        // GET: /api/crypto/{cryptoId}
         [HttpGet("{cryptoId}")]
         public async Task<ActionResult<CurrencyListDTO>> GetCurrency(int cryptoId)
         {
@@ -44,7 +44,7 @@ namespace CryptoWallet.Controllers
         }
 
 
-        // POST: /api/cryptos
+        // POST: /api/crypto
         [HttpPost]
         public async Task<IActionResult> CreateCurrency([FromBody] CurrencyCreateDTO dto)
         {
@@ -55,11 +55,20 @@ namespace CryptoWallet.Controllers
         }
 
 
-        // DELETE: /api/cryptos/{cryptoId}
+        // DELETE: /api/crypto/{cryptoId}
         [HttpDelete("{cryptoId}")]
         public async Task<IActionResult> DeleteCurrency(int cryptoId)
         {
             var success = await _currencyService.DeleteCurrencyAsync(cryptoId);
+            if (!success)
+                return NotFound("Currency not found.");
+            return NoContent();
+        }
+        // PUT: /api/crypto/price
+        [HttpPut("price")]
+        public async Task<IActionResult> UpdateCurrencyPrice([FromBody] CurrencyUpdateDTO dto)
+        {
+            var success = await _currencyService.UpdateCurrencyManuallyAsync(dto.CurrencyId, dto.CurrencyValue);
             if (!success)
                 return NotFound("Currency not found.");
             return NoContent();
