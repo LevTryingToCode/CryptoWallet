@@ -45,7 +45,7 @@ namespace CryptoWallet.Services
                                 Change = currentValue - previousValue.Value
                             };
 
-                            Console.WriteLine($"[LOG] {log.CurrencyName}: {log.OldValue} -> {log.NewValue} (Δ={log.Change:F2})");
+                            Console.WriteLine($"[LOG] {log.CurrencyName}: {log.OldValue} -> {log.NewValue} CHANGE : ({log.Change})");
                         }
 
                         previousValue = currentValue;
