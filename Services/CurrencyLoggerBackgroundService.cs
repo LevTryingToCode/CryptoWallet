@@ -8,7 +8,7 @@ namespace CryptoWallet.Services
     public class CurrencyLoggerBackgroundService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly TimeSpan _interval = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _interval = TimeSpan.FromSeconds(30);
         public bool IsRunning { get;  set; } = false;
         public int? TrackedCurrencyId { get; set; } = null;
 
