@@ -15,9 +15,11 @@ namespace CryptoWallet.Services
     public class CurrencyService : ICurrencyService
     {
         private readonly AppDbContext _context;
-        public CurrencyService(AppDbContext context)
+        private readonly ICurrencyChangeNotifier _notifier;
+        public CurrencyService(AppDbContext context, ICurrencyChangeNotifier notifier)
         {
             _context = context;
+            _notifier = notifier;
         }
         public async Task<bool> CreateCurrencyAsync(CurrencyCreateDTO dto)
         {
@@ -69,10 +71,19 @@ namespace CryptoWallet.Services
         {
             var currency = await _context.currencies.FindAsync(id);
             if (currency == null) return false;
-            
-            currency.Value = newprice; 
-            await _context.SaveChangesAsync();
+
+            double oldValue = currency.Value;
+
+            if (oldValue != newprice)
+            {
+                currency.Value = newprice;
+                await _context.SaveChangesAsync();
+
+                _notifier.NotifyChange(currency, oldValue, newprice);
+            }
+
             return true;
         }
+
     }
 }

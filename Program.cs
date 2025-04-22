@@ -14,6 +14,7 @@ builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 
 //Background Services
 builder.Services.AddHostedService<CurrencyUpdateBackgroundService>();
+builder.Services.AddSingleton<ICurrencyChangeNotifier, CurrencyChangeNotifier>();
 builder.Services.AddSingleton<CurrencyLoggerBackgroundService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<CurrencyLoggerBackgroundService>());
 

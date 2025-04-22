@@ -7,55 +7,45 @@ namespace CryptoWallet.Services
 {
     public class CurrencyLoggerBackgroundService : BackgroundService
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly TimeSpan _interval = TimeSpan.FromSeconds(10);
-        private readonly Dictionary<int, double> _previousValues = new();
+        private readonly ICurrencyChangeNotifier _notifier;
         public bool IsRunning { get; set; } = false;
 
-        public CurrencyLoggerBackgroundService(IServiceProvider serviceProvider)
+        public CurrencyLoggerBackgroundService(ICurrencyChangeNotifier notifier)
         {
-            _serviceProvider = serviceProvider;
+            _notifier = notifier;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+        public override Task StartAsync(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                if (IsRunning)
-                {
-                    using var scope = _serviceProvider.CreateScope();
-                    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            _notifier.OnCurrencyChanged += LogCurrencyChange;
+            return base.StartAsync(cancellationToken);
+        }
 
-                    var currencies = await context.currencies.ToListAsync(cancellationToken);
+        private void LogCurrencyChange(Currency currency, double oldValue, double newValue)
+        {
+            if (!IsRunning) return;
 
-                    foreach (var currency in currencies)
-                    {
-                        double currentValue = currency.Value;
+            double change = newValue - oldValue;
+            double percentChange = oldValue != 0 ? (change / oldValue) * 100 : 0;
 
-                        if (_previousValues.TryGetValue(currency.CurrencyId, out double previousValue))
-                        {
-                            if (currentValue != previousValue)
-                            {
-                                var log = new CurrencyMarketLogDTO
-                                {
-                                    CurrencyId = currency.CurrencyId,
-                                    CurrencyName = currency.Name,
-                                    OldValue = previousValue,
-                                    NewValue = currentValue,
-                                    Change = currentValue - previousValue
-                                };
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(
+                $"[LOG] {currency.Name}: {oldValue:F2} -> {newValue:F2} CHANGE - {change:F2}, - > {percentChange:F2}%)"
+            );
+        }
 
-                                Console.ForegroundColor = ConsoleColor.Yellow;
-                                Console.WriteLine($"[LOG] {log.CurrencyName}: {log.OldValue} -> {log.NewValue} CHANGE: ({log.Change})");
-                            }
-                        }
-                        _previousValues[currency.CurrencyId] = currentValue;
-                    }
-                }
-                await Task.Delay(_interval, cancellationToken);
-            }
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _notifier.OnCurrencyChanged -= LogCurrencyChange;
+            return base.StopAsync(cancellationToken);
+        }
+
+        protected override Task ExecuteAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
     }
+
 
 }
 
