@@ -14,20 +14,20 @@ namespace CryptoWallet.Controllers
             _loggerService = loggerService;
         }
 
-        [HttpPost("start/{currencyId}")]
-        public IActionResult StartLogging(int currencyId)
+        [HttpPost("start")]
+        public IActionResult StartLogging()
         {
-            _loggerService.TrackedCurrencyId = currencyId;
+            if (_loggerService.IsRunning) { return BadRequest("Logging already running!"); }
             _loggerService.IsRunning = true;
-            return Ok($"Started logging currency with ID {currencyId}.");
+            return Ok("Started logging all currencies market change!");
         }
 
         [HttpPost("stop")]
         public IActionResult StopLogging()
         {
+            if (!_loggerService.IsRunning) { return BadRequest("Logging already stopped!"); }
             _loggerService.IsRunning = false;
-            _loggerService.TrackedCurrencyId = null;
-            return Ok("Stopped logging.");
+            return Ok("Stopped logging all currencies market change!");
         }
 
         [HttpGet("status")]
@@ -35,8 +35,7 @@ namespace CryptoWallet.Controllers
         {
             return Ok(new
             {
-                _loggerService.IsRunning,
-                _loggerService.TrackedCurrencyId
+                _loggerService.IsRunning
             });
         }
     }

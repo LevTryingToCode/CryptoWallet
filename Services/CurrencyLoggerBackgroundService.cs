@@ -9,52 +9,53 @@ namespace CryptoWallet.Services
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly TimeSpan _interval = TimeSpan.FromSeconds(10);
-        public bool IsRunning { get;  set; } = false;
-        public int? TrackedCurrencyId { get; set; } = null;
+        private readonly Dictionary<int, double> _previousValues = new();
+        public bool IsRunning { get; set; } = false;
 
         public CurrencyLoggerBackgroundService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
+
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            double? previousValue = null;
-
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (IsRunning && TrackedCurrencyId.HasValue)
+                if (IsRunning)
                 {
                     using var scope = _serviceProvider.CreateScope();
                     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                    var currency = await context.currencies
-                        .FirstOrDefaultAsync(c => c.CurrencyId == TrackedCurrencyId.Value, cancellationToken);
+                    var currencies = await context.currencies.ToListAsync(cancellationToken);
 
-                    if (currency != null)
+                    foreach (var currency in currencies)
                     {
                         double currentValue = currency.Value;
 
-                        if (previousValue.HasValue && currentValue != previousValue.Value)
+                        if (_previousValues.TryGetValue(currency.CurrencyId, out double previousValue))
                         {
-                            var log = new CurrencyMarketLogDTO
+                            if (currentValue != previousValue)
                             {
-                                CurrencyId = currency.CurrencyId,
-                                CurrencyName = currency.Name,
-                                OldValue = previousValue.Value,
-                                NewValue = currentValue,
-                                Change = currentValue - previousValue.Value
-                            };
+                                var log = new CurrencyMarketLogDTO
+                                {
+                                    CurrencyId = currency.CurrencyId,
+                                    CurrencyName = currency.Name,
+                                    OldValue = previousValue,
+                                    NewValue = currentValue,
+                                    Change = currentValue - previousValue
+                                };
 
-                            Console.WriteLine($"[LOG] {log.CurrencyName}: {log.OldValue} -> {log.NewValue} CHANGE : ({log.Change})");
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                                Console.WriteLine($"[LOG] {log.CurrencyName}: {log.OldValue} -> {log.NewValue} CHANGE: ({log.Change})");
+                            }
                         }
-
-                        previousValue = currentValue;
+                        _previousValues[currency.CurrencyId] = currentValue;
                     }
                 }
-
                 await Task.Delay(_interval, cancellationToken);
             }
         }
     }
+
 }
 
