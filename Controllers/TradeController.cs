@@ -21,7 +21,7 @@ namespace CryptoWallet.Controllers
             var success = await _tradeService.BuyCryptoAsync(dto.UserId, dto.CurrencyId, dto.AmountToBuy);
             if (!success)
                 return BadRequest("Buy failed! Not enough currency or error during cryptoCurrency load.");
-            return Ok("Vásárlás sikeres.");
+            return Ok("Buy successful!");
         }
 
         [HttpPost("sell")]

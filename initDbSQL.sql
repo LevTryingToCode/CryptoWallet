@@ -38,9 +38,9 @@ VALUES
 SET IDENTITY_INSERT currencies OFF;
 
 SET IDENTITY_INSERT currencyItems ON;
-INSERT INTO currencyItems (CurrencyItemId, CurrencyId, WalletId, BuyValue)
+INSERT INTO currencyItems (CurrencyItemId, CurrencyId, WalletId, BuyValue,CryptoAmount)
 VALUES 
-(1, 1, 1, 1200), 
-(2, 2, 2, 500),   
-(3, 3, 2, 300);   
+(1, 1, 1, 1200,2.1), 
+(2, 2, 2, 500,3.2),   
+(3, 3, 2, 300,0.2);   
 SET IDENTITY_INSERT currencyItems OFF;

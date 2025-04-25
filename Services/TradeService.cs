@@ -22,27 +22,33 @@ namespace CryptoWallet.Services
 
         public async Task<bool> BuyCryptoAsync(int userId, int currencyId, double amountToSpend)
         {
-            var wallet = await _context.wallets.Include(w => w.currencyItems)
-                                               .FirstOrDefaultAsync(w => w.UserId == userId);
+            var wallet = await _context.wallets
+                .Include(w => w.currencyItems)
+                .FirstOrDefaultAsync(w => w.UserId == userId);
+
             var currency = await _context.currencies.FindAsync(currencyId);
 
-            if (wallet == null || currency == null || wallet.Balance < amountToSpend) { return false; }
+            if (wallet == null || currency == null || wallet.Balance < amountToSpend)
+                return false;
 
             double cryptoAmount = amountToSpend / currency.Value;
             wallet.Balance -= amountToSpend;
-            
-            
-            var alreadyInWallet = wallet.currencyItems.FirstOrDefault(ci => ci.CurrencyItemId == currencyId);
+
+            var alreadyInWallet = wallet.currencyItems
+                .FirstOrDefault(ci => ci.CurrencyItemId == currencyId);
+
             if (alreadyInWallet != null)
             {
                 alreadyInWallet.BuyValue += amountToSpend;
+                alreadyInWallet.CryptoAmount += cryptoAmount;
             }
             else
             {
                 wallet.currencyItems.Add(new CurrencyItem
                 {
                     CurrencyItemId = currencyId,
-                    BuyValue = amountToSpend
+                    BuyValue = amountToSpend,
+                    CryptoAmount = cryptoAmount
                 });
             }
 
@@ -87,16 +93,28 @@ namespace CryptoWallet.Services
 
             if (wallet == null || currency == null)
                 return false;
-
+            //select 
             var item = wallet.currencyItems.FirstOrDefault(ci => ci.CurrencyItemId == currencyId);
-            if (item == null || item.BuyValue < amountToSell)
+            if (item == null || item.CryptoAmount < amountToSell)
                 return false;
 
-            double sellReturn = (amountToSell / currency.Value) * currency.Value; // = amountToSell
-            wallet.Balance += sellReturn;
-            item.BuyValue -= amountToSell;
+            //sell value
+            double sellReturn = amountToSell * currency.Value;
 
-            if (item.BuyValue <= 0)
+            //price/unit -> original cost
+            double buyPricePerUnit = item.BuyValue / item.CryptoAmount;
+            double originalCost = buyPricePerUnit * amountToSell;
+
+            //profit -> negative or positive
+            double profit = sellReturn - originalCost;
+
+            // update balance, crypto amount and buy value
+            wallet.Balance += sellReturn;
+            item.CryptoAmount -= amountToSell;
+            item.BuyValue -= originalCost;
+
+            //rounding issues
+            if (item.CryptoAmount <= 0.000001) 
             {
                 wallet.currencyItems.Remove(item);
             }

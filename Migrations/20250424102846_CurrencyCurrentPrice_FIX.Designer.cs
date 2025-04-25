@@ -3,6 +3,7 @@ using CryptoWallet.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CryptoWallet.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250424102846_CurrencyCurrentPrice_FIX")]
+    partial class CurrencyCurrentPrice_FIX
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,7 +55,7 @@ namespace CryptoWallet.Migrations
                     b.Property<double>("BuyValue")
                         .HasColumnType("float");
 
-                    b.Property<double>("CryptoAmount")
+                    b.Property<double>("CurrencyCurrentValue")
                         .HasColumnType("float");
 
                     b.Property<int>("CurrencyId")
