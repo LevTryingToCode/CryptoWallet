@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 //Controllers and Services
 builder.Services.AddControllers();
 builder.Services.AddScoped<IUserService,UserService>();
@@ -18,9 +19,10 @@ builder.Services.AddSingleton<ICurrencyChangeNotifier, CurrencyChangeNotifier>()
 builder.Services.AddSingleton<CurrencyLoggerBackgroundService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<CurrencyLoggerBackgroundService>());
 
-//Database
+//Database - home state
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Sqlexpress")));
-
+//Database - uniPC
+//builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LocalInstance")));
 builder.Services.AddEndpointsApiExplorer();
 
 //Swagger
