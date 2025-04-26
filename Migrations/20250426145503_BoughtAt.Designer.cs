@@ -4,6 +4,7 @@ using CryptoWallet.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CryptoWallet.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250426145503_BoughtAt")]
+    partial class BoughtAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -50,6 +53,9 @@ namespace CryptoWallet.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CurrencyItemId"));
 
+                    b.Property<DateTime>("BoughtAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<double>("BuyValue")
                         .HasColumnType("float");
 
@@ -69,42 +75,6 @@ namespace CryptoWallet.Migrations
                     b.HasIndex("WalletId");
 
                     b.ToTable("currencyItems");
-                });
-
-            modelBuilder.Entity("CryptoWallet.Entities.Transaction", b =>
-                {
-                    b.Property<int>("TransactionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
-
-                    b.Property<double>("Amount")
-                        .HasColumnType("float");
-
-                    b.Property<int>("CurrencyId")
-                        .HasColumnType("int");
-
-                    b.Property<double>("Rate")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("TransactionType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("TransactionId");
-
-                    b.HasIndex("CurrencyId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("transactions");
                 });
 
             modelBuilder.Entity("CryptoWallet.Entities.User", b =>
@@ -162,34 +132,13 @@ namespace CryptoWallet.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CryptoWallet.Entities.Wallet", "Wallet")
+                    b.HasOne("CryptoWallet.Entities.Wallet", null)
                         .WithMany("currencyItems")
                         .HasForeignKey("WalletId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Wallet");
-
                     b.Navigation("currency");
-                });
-
-            modelBuilder.Entity("CryptoWallet.Entities.Transaction", b =>
-                {
-                    b.HasOne("CryptoWallet.Entities.Currency", "Currency")
-                        .WithMany()
-                        .HasForeignKey("CurrencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CryptoWallet.Entities.User", "User")
-                        .WithMany("Transactions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Currency");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CryptoWallet.Entities.Wallet", b =>
@@ -205,8 +154,6 @@ namespace CryptoWallet.Migrations
 
             modelBuilder.Entity("CryptoWallet.Entities.User", b =>
                 {
-                    b.Navigation("Transactions");
-
                     b.Navigation("wallet")
                         .IsRequired();
                 });

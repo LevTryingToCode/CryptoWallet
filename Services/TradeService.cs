@@ -1,6 +1,6 @@
-﻿using CryptoWallet.Entities;
+﻿using CryptoWallet.Dtos;
+using CryptoWallet.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Transactions;
 using static CryptoWallet.Dtos.CurrencyItemDTO;
 using static CryptoWallet.Dtos.TradeDTO;
 
@@ -11,6 +11,10 @@ namespace CryptoWallet.Services
         Task<bool> BuyCryptoAsync(int userId, int currencyId, double amountToSpend);
         Task<bool> SellCryptoAsync(int userId, int currencyId, double amountToSell);
         Task<PortfolioDTO?> GetPortfolioAsync(int userId);
+        Task<string?> GetTotalProfitAsync(int userId);
+        Task<List<DetailedProfitDTO>> GetDetailedProfitAsync(int userid);
+        Task<List<Transaction>> GetTransactionsAsync(int userId);
+        Task<Transaction?> GetTransactionDetailsAsync(int transactionId);
     }
     public class TradeService : ITradeService
     {
@@ -52,9 +56,20 @@ namespace CryptoWallet.Services
                 });
             }
 
+            _context.transactions.Add(new Transaction
+            {
+                UserId = userId,
+                CurrencyId = currencyId,
+                TransactionType = "Buy",
+                Amount = cryptoAmount,
+                Rate = currency.Value,
+                Timestamp = DateTime.Now
+            });
+
             await _context.SaveChangesAsync();
             return true;
         }
+
 
         public async Task<PortfolioDTO?> GetPortfolioAsync(int userId)
         {
@@ -70,7 +85,7 @@ namespace CryptoWallet.Services
             {
                 CurrencyId = ci.CurrencyItemId,
                 CurrencyName = ci.currency.Name,
-                CurrencyValue = ci.BuyValue
+                CurrencyValue = ci.BuyValue,
             }).ToList();
 
             double portfolioValue = wallet.currencyItems.Sum(ci => (ci.BuyValue / ci.currency.Value) * ci.currency.Value);
@@ -93,34 +108,93 @@ namespace CryptoWallet.Services
 
             if (wallet == null || currency == null)
                 return false;
-            //select 
+
             var item = wallet.currencyItems.FirstOrDefault(ci => ci.CurrencyItemId == currencyId);
             if (item == null || item.CryptoAmount < amountToSell)
                 return false;
 
-            //sell value
             double sellReturn = amountToSell * currency.Value;
 
-            //price/unit -> original cost
             double buyPricePerUnit = item.BuyValue / item.CryptoAmount;
             double originalCost = buyPricePerUnit * amountToSell;
 
-            //profit -> negative or positive
             double profit = sellReturn - originalCost;
 
-            // update balance, crypto amount and buy value
             wallet.Balance += sellReturn;
             item.CryptoAmount -= amountToSell;
             item.BuyValue -= originalCost;
 
-            //rounding issues
-            if (item.CryptoAmount <= 0.000001) 
+            if (item.CryptoAmount <= 0.000001)
             {
                 wallet.currencyItems.Remove(item);
             }
 
+            _context.transactions.Add(new Transaction
+            {
+                UserId = userId,
+                CurrencyId = currencyId,
+                TransactionType = "Sell",
+                Amount = amountToSell,
+                Rate = currency.Value,
+                Timestamp = DateTime.Now
+            });
+
             await _context.SaveChangesAsync();
             return true;
+        }
+        public async Task<string?> GetTotalProfitAsync(int userId)
+        {
+            var wallet = await _context.wallets
+                .Include(w => w.currencyItems)
+                .ThenInclude(ci => ci.currency)
+                .FirstOrDefaultAsync(w => w.UserId == userId);
+
+            if (wallet == null)
+                return null;
+
+            double totalProfit = wallet.currencyItems.Sum(ci =>
+            {
+                double currentValue = ci.CryptoAmount * ci.currency.Value;
+                double buyValue = ci.BuyValue;
+                return currentValue - buyValue;
+            });
+
+            return $"{totalProfit} is the current profit.";
+        }
+
+        public async Task<List<DetailedProfitDTO>?> GetDetailedProfitAsync(int userId)
+        {
+            var wallet = await _context.wallets
+                .Include(w => w.currencyItems)
+                .ThenInclude(ci => ci.currency)
+                .FirstOrDefaultAsync(w => w.UserId == userId);
+
+            if (wallet == null)
+                return null;
+
+            var detailedProfits = wallet.currencyItems.Select(ci => new DetailedProfitDTO
+            {
+                CurrencyId = ci.CurrencyItemId,
+                CurrencyName = ci.currency.Name,
+                BuyValue = ci.BuyValue,
+                CurrentValue = ci.CryptoAmount * ci.currency.Value,
+                Profit = (ci.CryptoAmount * ci.currency.Value) - ci.BuyValue
+            }).ToList();
+
+            return detailedProfits;
+        }
+        public async Task<List<Transaction>> GetTransactionsAsync(int userId)
+        {
+            return await _context.transactions
+                .Where(t => t.UserId == userId)
+                .OrderByDescending(t => t.Timestamp)
+                .ToListAsync();
+        }
+
+        public async Task<Transaction?> GetTransactionDetailsAsync(int transactionId)
+        {
+            return await _context.transactions
+                .FirstOrDefaultAsync(t => t.TransactionId == transactionId);
         }
     }
 }

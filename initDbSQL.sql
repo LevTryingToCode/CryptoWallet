@@ -1,3 +1,4 @@
+DELETE FROM transactions;
 DELETE FROM currencyItems;
 DELETE FROM wallets;
 DELETE FROM users;
@@ -38,9 +39,17 @@ VALUES
 SET IDENTITY_INSERT currencies OFF;
 
 SET IDENTITY_INSERT currencyItems ON;
-INSERT INTO currencyItems (CurrencyItemId, CurrencyId, WalletId, BuyValue,CryptoAmount)
+INSERT INTO currencyItems (CurrencyItemId, CurrencyId, WalletId, BuyValue, CryptoAmount)
 VALUES 
-(1, 1, 1, 1200,2.1), 
-(2, 2, 2, 500,3.2),   
-(3, 3, 2, 300,0.2);   
+(1, 1, 1, 1200, 2.1), 
+(2, 2, 2, 500, 3.2),   
+(3, 3, 2, 300, 0.2);   
 SET IDENTITY_INSERT currencyItems OFF;
+
+SET IDENTITY_INSERT transactions ON;
+INSERT INTO transactions (TransactionId, UserId, CurrencyId, TransactionType, Amount, Rate, Timestamp)
+VALUES 
+(1, 1, 1, 'Buy', 2.1, 60000, '2025-04-01 10:00:00'),
+(2, 2, 2, 'Buy', 3.2, 3000, '2025-04-02 11:00:00'),
+(3, 2, 3, 'Sell', 0.2, 0.12, '2025-04-03 12:00:00');
+SET IDENTITY_INSERT transactions OFF;
