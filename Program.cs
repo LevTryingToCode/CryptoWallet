@@ -23,7 +23,8 @@ builder.Services.AddHostedService(provider => provider.GetRequiredService<Curren
 
 //Database - home state
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Sqlexpress")));
-//Database - uniPC
+
+//Database - ZH
 //builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LocalInstance")));
 builder.Services.AddEndpointsApiExplorer();
 

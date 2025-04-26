@@ -21,10 +21,14 @@ namespace CryptoWallet.Services
             _context = context;
             _notifier = notifier;
         }
+
+        // Create a new currency
         public async Task<bool> CreateCurrencyAsync(CurrencyCreateDTO dto)
         {
+            // Check if the currency already exists
             if (await _context.currencies.AnyAsync(c => c.Name == dto.CurrencyName)) { return false; }
 
+            // Create a new currency and add it to the database
             var currency = new Currency
             {
                 Name = dto.CurrencyName,
@@ -34,9 +38,10 @@ namespace CryptoWallet.Services
             await _context.SaveChangesAsync();
             return true;
         }
-
+        // Delete an already existing currency
         public async Task<bool> DeleteCurrencyAsync(int id)
         {
+            //Delete the currency by id
             var currency = await _context.currencies.FindAsync(id);
             if (currency == null) return false; 
             _context.currencies.Remove(currency);
@@ -44,6 +49,7 @@ namespace CryptoWallet.Services
             return true;
         }
 
+        // Get all currencies
         public async Task<List<CurrencyListDTO>> GetAllCurrenciesAsync()
         {
             return await _context.currencies.Select(c => new CurrencyListDTO
@@ -54,6 +60,7 @@ namespace CryptoWallet.Services
             }).ToListAsync();
         }
 
+        // Get currency by id
         public async Task<CurrencyListDTO?> GetCurrencyByIdAsync(int id)
         {
             var currency = await _context.currencies.FindAsync(id);
@@ -67,18 +74,21 @@ namespace CryptoWallet.Services
             };
         }
 
+        // Update currency manually and notify logger as the change happens
         public async Task<bool> UpdateCurrencyManuallyAsync(int id, double newprice)
         {
+            // Check if the currency exists
             var currency = await _context.currencies.FindAsync(id);
             if (currency == null) return false;
 
+            // Check if the new price is different from the old price
+            // If the new price is the same as the old price, do nothing
             double oldValue = currency.Value;
-
             if (oldValue != newprice)
             {
                 currency.Value = newprice;
                 await _context.SaveChangesAsync();
-
+                //notify logger for the change 
                 _notifier.NotifyChange(currency, oldValue, newprice);
             }
 
