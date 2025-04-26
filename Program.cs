@@ -3,6 +3,8 @@ using CryptoWallet.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
+//Luterán Levente - P0S3ED
+
 var builder = WebApplication.CreateBuilder(args);
 
 
