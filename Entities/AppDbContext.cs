@@ -8,6 +8,7 @@ namespace CryptoWallet.Entities
         public DbSet<Wallet> wallets { get; set; }
         public DbSet<Currency> currencies { get; set; }
         public DbSet<CurrencyItem> currencyItems { get; set; }
+        public DbSet<Transaction> transactions { get; set; }
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

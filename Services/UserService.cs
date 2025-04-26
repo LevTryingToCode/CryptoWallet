@@ -1,5 +1,6 @@
 ﻿using CryptoWallet.Dtos;
 using CryptoWallet.Entities;
+using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.EntityFrameworkCore;
 using static CryptoWallet.Dtos.UserDTO;
 namespace CryptoWallet.Services
@@ -11,6 +12,7 @@ namespace CryptoWallet.Services
         Task<UserListDTO> CreateUserAsync(UserRegisterDTO userRegisterDTO);
         Task<bool> DeleteUserAsync(int id);
         Task<bool> UpdateUserAsync(int id, UserRegisterDTO userRegisterDTO);
+        Task<UserLoginResponseDTO?> LoginAsync(UserLoginDTO loginDto);
     }
     public class UserService : IUserService
     {
@@ -22,7 +24,7 @@ namespace CryptoWallet.Services
         }
         public async Task<UserListDTO> CreateUserAsync(UserRegisterDTO userRegisterDTO)
         {
-            if (_context.users.Any(u => u.Email == userRegisterDTO.Email))
+            if (await _context.users.AnyAsync(u => u.Email == userRegisterDTO.Email))
             {
                 throw new Exception("Email already exists");
             }
@@ -31,7 +33,7 @@ namespace CryptoWallet.Services
             {
                 Name = userRegisterDTO.Name,
                 Email = userRegisterDTO.Email,
-                Password = userRegisterDTO.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(userRegisterDTO.Password),
                 wallet = new Wallet()
             };
 
@@ -107,9 +109,9 @@ namespace CryptoWallet.Services
 
             user.Name = userRegisterDTO.Name;
             user.Email = userRegisterDTO.Email;
-            user.Password = userRegisterDTO.Password;
+            user.Password = BCrypt.Net.BCrypt.HashPassword(userRegisterDTO.Password);
 
-            
+
             new UserListDTO
             {
                 Id = user.Id,
@@ -119,6 +121,23 @@ namespace CryptoWallet.Services
             };
             await _context.SaveChangesAsync();
             return true;
+        }
+        public async Task<UserLoginResponseDTO?> LoginAsync(UserLoginDTO loginDto)
+        {
+            var user = await _context.users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+            if (user == null)
+                return null;
+
+            bool valid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password);
+            if (!valid)
+                return null;
+
+            return new UserLoginResponseDTO
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email
+            };
         }
     }
 }
