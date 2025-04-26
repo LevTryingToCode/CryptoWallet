@@ -16,6 +16,7 @@ namespace CryptoWallet.Services
             _notifier = notifier;
         }
 
+        // change currency value every 30 seconds and notify the logger as the change happens --> until it is stopped
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
@@ -29,7 +30,7 @@ namespace CryptoWallet.Services
                     double oldValue = currency.Value;
                     double newValue = Math.Round(_random.NextDouble() * (70.0 - 10.0) + 10.0, 2);
                     currency.Value = newValue;
-
+                    //notify logger of the change
                     _notifier.NotifyChange(currency, oldValue, newValue);
                 }
 
