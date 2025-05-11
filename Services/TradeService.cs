@@ -13,8 +13,8 @@ namespace CryptoWallet.Services
         Task<PortfolioDTO?> GetPortfolioAsync(int userId);
         Task<string?> GetTotalProfitAsync(int userId);
         Task<List<DetailedProfitDTO>> GetDetailedProfitAsync(int userid);
-        Task<List<Transaction>> GetTransactionsAsync(int userId);
-        Task<Transaction?> GetTransactionDetailsAsync(int transactionId);
+        Task<List<TransactionDTO>> GetTransactionsAsync(int userId);
+        Task<TransactionDTO> GetTransactionDetailsAsync(int transactionId);
     }
     public class TradeService : ITradeService
     {
@@ -212,20 +212,35 @@ namespace CryptoWallet.Services
             return detailedProfits;
         }
         //get the transactions of the user
-        public async Task<List<Transaction>> GetTransactionsAsync(int userId)
+        public async Task<List<TransactionDTO>> GetTransactionsAsync(int userId)
         {
             //return all transactions from the same userid in a descending order according to the transactions timestamp (without DTO)
             return await _context.transactions
-                .Where(t => t.UserId == userId)
-                .OrderByDescending(t => t.Timestamp)
-                .ToListAsync();
+            .Where(t => t.UserId == userId)
+            .Select(t => new TransactionDTO
+            {
+                TransactionId = t.TransactionId,
+                TransactionType = t.TransactionType,
+                Amount = t.Amount,
+                Rate = t.Rate,
+                Timestamp = t.Timestamp,
+                CurrencyName = t.Currency.Name
+            })
+            .ToListAsync();
         }
 
-        public async Task<Transaction?> GetTransactionDetailsAsync(int transactionId)
+        public async Task<TransactionDTO> GetTransactionDetailsAsync(int transactionId)
         {
-            //return the transaction with the given transactionId  (without DTO)
-            return await _context.transactions
-                .FirstOrDefaultAsync(t => t.TransactionId == transactionId);
+            //return the transaction with the given transactionId 
+            return await _context.transactions.Where(t => t.TransactionId == transactionId)
+                                              .Select(t => new TransactionDTO { 
+                                                    TransactionId = t.TransactionId,
+                                                    TransactionType = t.TransactionType,
+                                                    Amount = t.Amount,
+                                                    Rate = t.Rate,
+                                                    Timestamp = t.Timestamp,
+                                                    CurrencyName = t.Currency.Name
+                                              }).FirstOrDefaultAsync();
         }
     }
 }

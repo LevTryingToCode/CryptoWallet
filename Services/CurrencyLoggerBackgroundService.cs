@@ -37,7 +37,7 @@ namespace CryptoWallet.Services
             // Log the change to the console
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine(
-                $"[LOG] {currency.Name}: {oldValue:F2} -> {newValue:F2} CHANGE - {change:F2}, - > {percentChange:F2}%)"
+                $"[LOG] {currency.Name}: {oldValue:F2} ==> {newValue:F2} CHANGE :: {change:F2}, --> {percentChange:F2}%)"
             );
         }
 
