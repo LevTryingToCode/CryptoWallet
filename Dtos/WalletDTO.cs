@@ -19,7 +19,7 @@ namespace CryptoWallet.Dtos
         }
         public class WalletUpdateDTO
         {
-            public int UserId { get; set; }
+            public int walletId { get; set; }
             public double Balance { get; set; }
         }
     }

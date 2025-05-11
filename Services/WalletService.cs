@@ -11,7 +11,7 @@ namespace CryptoWallet.Services
     {
         public Task<WalletListDTO?> GetWalletByIdAsync(int userid); 
         public Task<List<WalletListDTO>?> GetAllWalletsAsync(); 
-        public Task<bool> UpdateWalletAsync(int walletid, double balance);
+        public Task<bool> UpdateWalletAsync( int walletid,double balance);
         public Task<bool> CreateWalletAsync(int userId, double balance = 1000);
         public Task<bool> DeleteWalletByUserIdAsync(int userid);
     }
@@ -84,7 +84,7 @@ namespace CryptoWallet.Services
             //check if the wallet exists
             var wallet = await _context.wallets.FirstOrDefaultAsync(w => w.WalletId == walletid);
             if (wallet == null) {
-                return false;
+                return false ;
             }
             //set balance 
             wallet.Balance = balance;
@@ -100,7 +100,7 @@ namespace CryptoWallet.Services
             //create wallet
             var wallet = new Wallet
             {
-                UserId = userid,
+                WalletId = userid,
                 Balance = balance,
                 currencyItems = new List<CurrencyItem>()
             };

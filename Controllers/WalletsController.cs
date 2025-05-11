@@ -41,9 +41,9 @@ namespace CryptoWallet.Controllers
 
         // PUT: /api/wallet/{walletId}
         [HttpPut("{walletId}")]
-        public async Task<IActionResult> UpdateWallet(int walletId, [FromBody] WalletUpdateDTO dto)
+        public async Task<IActionResult> UpdateWallet([FromBody] WalletUpdateDTO dto)
         {
-            var result = await _walletService.UpdateWalletAsync(walletId, dto.Balance);
+            var result = await _walletService.UpdateWalletAsync(dto.walletId,dto.Balance);
             if (!result) return NotFound();
             return NoContent();
         }
